@@ -11,8 +11,8 @@ import org.wpilib.math.trajectory.TrapezoidProfile;
 import org.wpilib.math.util.Units;
 import org.wpilib.simulation.DCMotorSim;
 
-public class TurretSim implements Mechanism {
-    private static TurretSim instance;
+public class ExampleTurret implements Mechanism {
+    private static ExampleTurret instance;
 
     // Simulated turret motor (yes i know its not actually single jointed arm)
     private DCMotorSim motor = new DCMotorSim(
@@ -20,9 +20,10 @@ public class TurretSim implements Mechanism {
             DCMotor.getKrakenX44(1), 0.005, 40), 
             DCMotor.getKrakenX44(1));
 
+    // PID and feedforward controllers
     private ProfiledPIDController controller = new ProfiledPIDController(
         2.0, 0, 0, 
-        new TrapezoidProfile.Constraints(12.5, 47.0));
+        new TrapezoidProfile.Constraints(12.5, 47.0)); // Maximum amount that the setpoint can change
     private SimpleMotorFeedforward ffController = new SimpleMotorFeedforward(0, 0.57);
 
     // bunch of variables for logging
@@ -39,20 +40,8 @@ public class TurretSim implements Mechanism {
 
     private double nextGoal = 0.0;
 
-    // this is the type of stuff we will be doing during the season
-    // no public constructor, everything is filtered through this method
-    // it will make sense with advantagekit's IO layer, see drive for reference
-    public static TurretSim initialize() {
-        if (instance == null) instance = new TurretSim();
-        return instance;
-    }
-
-    public static TurretSim getInstance() {
-        return instance;
-    }
-
-    private TurretSim() {
-        instance = this;
+    public ExampleTurret() {
+        // Enable wrapping
         controller.enableContinuousInput(-Math.PI, Math.PI);
     }
 
@@ -110,9 +99,11 @@ public class TurretSim implements Mechanism {
     public void periodic() {
         // Update PID calculations
         pidVolts = controller.calculate(motor.getAngularPosition());
+
+        // Update FF calculations
         ffVolts = ffController.calculate(motor.getAngularVelocity(), controller.getSetpoint().velocity);
 
-        // Feed the motor voltage from PID+FF calculations
+        // Feed the motor voltage from PID + FF calculations
         motor.setInputVoltage(pidVolts + ffVolts);
 
         // Update the motor sim

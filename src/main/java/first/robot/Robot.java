@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.button.CommandXboxController;
 
-import first.robot.mechanisms.TurretSim;
+import first.robot.mechanisms.ExampleTurret;
 import first.robot.mechanisms.drive.Drive;
 import first.robot.mechanisms.drive.GyroIO;
 import first.robot.mechanisms.drive.ModuleIOSim;
@@ -21,14 +21,14 @@ public class Robot extends LoggedOpModeRobot {
   public CommandXboxController operatorController = new CommandXboxController(Constants.OPERATOR_PORT);
 
   // Mechanisms
-  public final TurretSim turret;
+  public final ExampleTurret turret;
   public final Drive drive;
 
   public Robot() {
     Logger.addDataReceiver(new NT4Publisher());
 
     // Initialize simulated mechanisms
-    turret = TurretSim.initialize();
+    turret = new ExampleTurret();
     drive = Drive.initialize(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
     
     // Start Advantagekit logger
