@@ -24,11 +24,17 @@ public class Robot extends LoggedOpModeRobot {
   public final ExampleTurret turret;
   public final Drive drive;
 
+  /* 1c. Create the Shooter object
+  Declare your shooter object, then create a new Shooter object in the constructor.
+   */
+
   public Robot() {
     Logger.addDataReceiver(new NT4Publisher());
 
     // Initialize simulated mechanisms
     turret = new ExampleTurret();
+
+    // dw about this one too much
     drive = Drive.initialize(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
     
     // Start Advantagekit logger
@@ -40,6 +46,10 @@ public class Robot extends LoggedOpModeRobot {
     // Call mechanisms' perodic methods every loop
     turret.periodic();
     drive.periodic();
+
+    /* 1d. Call the Shooter periodic method
+    Call your shooter's periodic() method so that sim and logging update.
+     */
 
     // Run commands and stuff
     Scheduler.getDefault().run();

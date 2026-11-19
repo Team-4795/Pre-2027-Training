@@ -12,19 +12,17 @@ import org.wpilib.math.util.Units;
 import org.wpilib.simulation.DCMotorSim;
 
 public class ExampleTurret implements Mechanism {
-    private static ExampleTurret instance;
-
     // Simulated turret motor (yes i know its not actually single jointed arm)
-    private DCMotorSim motor = new DCMotorSim(
+    private DCMotorSim turretSim = new DCMotorSim(
         Models.singleJointedArmFromPhysicalConstants(
             DCMotor.getKrakenX44(1), 0.005, 40), 
             DCMotor.getKrakenX44(1));
 
     // PID and feedforward controllers
     private ProfiledPIDController controller = new ProfiledPIDController(
-        2.0, 0, 0, 
+        2.0, 0, 0.2, 
         new TrapezoidProfile.Constraints(12.5, 47.0)); // Maximum amount that the setpoint can change
-    private SimpleMotorFeedforward ffController = new SimpleMotorFeedforward(0, 0.57);
+    private SimpleMotorFeedforward ffController = new SimpleMotorFeedforward(0, 0.6);
 
     // bunch of variables for logging
     private double voltage;
@@ -40,10 +38,7 @@ public class ExampleTurret implements Mechanism {
 
     private double nextGoal = 0.0;
 
-    public ExampleTurret() {
-        // Enable wrapping
-        controller.enableContinuousInput(-Math.PI, Math.PI);
-    }
+    public ExampleTurret() {}
 
     /**
      * Sets the voltage of the motor once.
@@ -52,20 +47,34 @@ public class ExampleTurret implements Mechanism {
     public Command setVoltage(double volts) {
         // One-shot command, requires no while loop because it's just setting something once
         return run(coroutine -> {
-            motor.setInputVoltage(volts);
+            turretSim.setInputVoltage(volts);
         }).named("Turret/setVoltage");
     }
 
     /**
      * Sets the goal position of the turret.
-     * @param volts the desired goal, in rotations
+     * @param goalRots the desired goal, in rotations
      */
     public Command setGoal(double goalRots) {
         // Another one-shot command, so no loop
         return run(coroutine -> {
+            nextGoal = goalRots;
             goalRads = Units.rotationsToRadians(goalRots);
             controller.setGoal(goalRads);
         }).named("Turret/setGoal");
+    }
+
+    /**
+     * Sets the goal position of the turret and waits until the turret reaches the goal position before finishing.
+     * @param goalRots the desired goal, in rotations
+     */
+    public Command setGoalAndWait(double goalRots) {
+        return run(coroutine -> {
+            while (Math.abs(goalRots - Units.radiansToRotations(turretSim.getAngularPosition())) > 0.01) {
+                coroutine.await(setGoal(goalRots));
+                coroutine.yield();
+            }
+        }).named("Turret/setGoalAndWait");
     }
 
     /**
@@ -77,7 +86,7 @@ public class ExampleTurret implements Mechanism {
             // use a loop for commands that have to run constantly
             while (true) {
                 nextGoal += 0.01;
-                controller.setGoal(nextGoal);
+                coroutine.await(setGoal(nextGoal));
                 coroutine.yield(); // VERY important
             }
         }).named("Turret/incrementGoal");
@@ -88,33 +97,34 @@ public class ExampleTurret implements Mechanism {
      * @return command that slowly decreases the turret goal
      */
     public Command decrementGoal() {
-        // alternatively, for simple commands that have to run continuously,
-        // use runRepeatedly to avoid the loop
-        return runRepeatedly(() -> {
-            nextGoal -= 0.01;
-            controller.setGoal(nextGoal);
+        return run(coroutine -> {
+            while (true) {
+                nextGoal -= 0.01;
+                coroutine.await(setGoal(nextGoal));
+                coroutine.yield();
+            }
         }).named("Turret/decrementGoal");
     }
 
     public void periodic() {
         // Update PID calculations
-        pidVolts = controller.calculate(motor.getAngularPosition());
+        pidVolts = controller.calculate(turretSim.getAngularPosition());
 
         // Update FF calculations
-        ffVolts = ffController.calculate(motor.getAngularVelocity(), controller.getSetpoint().velocity);
+        ffVolts = ffController.calculate(turretSim.getAngularVelocity(), controller.getSetpoint().velocity);
 
         // Feed the motor voltage from PID + FF calculations
-        motor.setInputVoltage(pidVolts + ffVolts);
+        turretSim.setInputVoltage(pidVolts + ffVolts);
 
         // Update the motor sim
-        motor.update(0.02);
+        turretSim.update(0.02);
 
         // Update values for logging
-        position = Units.radiansToRotations(motor.getAngularPosition());
-        voltage = motor.getInputVoltage();
-        velocity = Units.radiansToRotations(motor.getAngularVelocity());
-        acceleration = Units.radiansToRotations(motor.getAngularAcceleration());
-        current = motor.getCurrentDraw();
+        position = Units.radiansToRotations(turretSim.getAngularPosition());
+        voltage = turretSim.getInputVoltage();
+        velocity = Units.radiansToRotations(turretSim.getAngularVelocity());
+        acceleration = Units.radiansToRotations(turretSim.getAngularAcceleration());
+        current = turretSim.getCurrentDraw();
 
         // Log updated values
         Logger.recordOutput("Turret/Position", position);
