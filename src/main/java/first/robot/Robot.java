@@ -24,11 +24,15 @@ public class Robot extends LoggedOpModeRobot {
   public final ExampleTurret turret;
   public final Drive drive;
 
+  // Robot instance
+  private static Robot instance;
+
   /* 1c. Create the Shooter object
   Declare your shooter object, then create a new Shooter object in the constructor.
    */
 
   public Robot() {
+    instance = this;
     Logger.addDataReceiver(new NT4Publisher());
 
     // Initialize simulated mechanisms
@@ -53,5 +57,9 @@ public class Robot extends LoggedOpModeRobot {
 
     // Run commands and stuff
     Scheduler.getDefault().run();
+  }
+
+  public static Robot getInstance() {
+    return instance;
   }
 }
