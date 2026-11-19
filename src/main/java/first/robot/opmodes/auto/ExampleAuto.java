@@ -25,12 +25,11 @@ public class ExampleAuto implements OpMode {
     // this is REALLY goofy, please don't actually write autos like this
     // we will use PathPlanner or BLine, both will provide ways to create paths + commands easily
     Scheduler.getDefault().schedule(
-        Command.race( // joystickDrive never finishes, so race should be used to make sure it runs for 3 secs
-            robot.drive.joystickDrive(robot.drive, () -> -2, () -> 0, () -> 0), 
-            Command.waitFor(Seconds.of(3)).named("Example Auto/Wait 3 Seconds"))
-            .named("Example Auto/Drive 3 Seconds")
-            // after 3 secs, the drivebase should be stopped
-            .andThen(robot.drive.joystickDrive(robot.drive, () -> 0, () -> 0, () -> 0)).named("Example Auto/Stop"));
+        Command.race( // runVelocityCommand never finishes, so use a race group to make it run for a certain amount of time
+          robot.drive.runVelocityCommand(2, 0, 0),
+          Command.waitFor(Seconds.of(3)).named("Example Auto/Wait 3 Seconds")).named("Example Auto/Drive Forward")
+          // after 3 secs, stop the drivebase
+        .andThen(robot.drive.runVelocityCommand(0, 0, 0)).named("Example Auto"));
   }
 
   /**

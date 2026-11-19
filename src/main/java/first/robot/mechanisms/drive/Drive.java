@@ -193,7 +193,7 @@ public class Drive implements Mechanism {
    *
    * @param speeds Speeds in meters/sec
    */
-  public void runVelocity(ChassisVelocities speeds) {
+  private void runVelocity(ChassisVelocities speeds) {
     // Calculate module setpoints
     ChassisVelocities discreteSpeeds = speeds.discretize(0.02);
     SwerveModuleVelocity[] setpointStates = kinematics.toSwerveModuleVelocities(discreteSpeeds);
@@ -210,6 +210,10 @@ public class Drive implements Mechanism {
 
     // Log optimized setpoints (runSetpoint mutates each state)
     Logger.recordOutput("SwerveStates/SetpointsOptimized", desaturatedVelocities);
+  }
+
+  public Command runVelocityCommand(double vx, double vy, double omega) {
+    return runRepeatedly(() -> runVelocity(new ChassisVelocities(vx, vy, omega))).named("Drive/runVelocityCommand");
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
