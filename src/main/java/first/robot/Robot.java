@@ -11,6 +11,7 @@ import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.button.CommandXboxController;
 
 import first.robot.mechanisms.ExampleTurret;
+import first.robot.mechanisms.Shooter;
 import first.robot.mechanisms.drive.Drive;
 import first.robot.mechanisms.drive.GyroIO;
 import first.robot.mechanisms.drive.ModuleIOSim;
@@ -30,6 +31,7 @@ public class Robot extends LoggedOpModeRobot {
   /* 1c. Create the Shooter object
   Declare your shooter object, then create a new Shooter object in the constructor.
    */
+  public final Shooter shooter;
 
   public Robot() {
     instance = this;
@@ -40,6 +42,8 @@ public class Robot extends LoggedOpModeRobot {
 
     // dw about this one too much
     drive = Drive.initialize(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
+
+    shooter = new Shooter();
     
     // Start Advantagekit logger
     Logger.start();
@@ -54,6 +58,7 @@ public class Robot extends LoggedOpModeRobot {
     /* 1d. Call the Shooter periodic method
     Call your shooter's periodic() method so that sim and logging update.
      */
+    shooter.periodic();
 
     // Run commands and stuff
     Scheduler.getDefault().run();

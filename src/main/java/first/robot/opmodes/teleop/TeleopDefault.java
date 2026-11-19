@@ -7,6 +7,7 @@ import org.wpilib.opmode.Teleop;
 
 import first.robot.Robot;
 import first.robot.commands.ExampleCommand;
+import first.robot.mechanisms.Shooter;
 
 @Teleop // labeled as teleop, will show up under "Teleoperated" in Driver station
 public class TeleopDefault implements OpMode {
@@ -26,6 +27,7 @@ public class TeleopDefault implements OpMode {
     Create a new Trigger for your shooter's setVoltage method.
     Then, bind it to a controller button.
      */
+    Trigger aTrigger;
 
 
     /**
@@ -37,6 +39,8 @@ public class TeleopDefault implements OpMode {
 
         turretDown = driverController.dpadLeft();
         turretUp = driverController.dpadRight();
+
+        aTrigger = driverController.a();
     }
 
     // Default commands and commands bound to triggers can go in here
@@ -54,6 +58,8 @@ public class TeleopDefault implements OpMode {
 
         turretDown.whileTrue(robot.turret.decrementGoal());
         turretUp.whileTrue(robot.turret.incrementGoal());
+        
+        aTrigger.onTrue(robot.shooter.setVoltage(6));
     }
 
     // Constructor, stuff that needs to run when the opmode is selected goes in here
