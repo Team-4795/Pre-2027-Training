@@ -11,7 +11,6 @@ import org.wpilib.command3.Scheduler;
 import org.wpilib.command3.button.CommandXboxController;
 
 import first.robot.mechanisms.ExampleTurret;
-import first.robot.mechanisms.Shooter;
 import first.robot.mechanisms.drive.Drive;
 import first.robot.mechanisms.drive.GyroIO;
 import first.robot.mechanisms.drive.ModuleIOSim;
@@ -24,7 +23,6 @@ public class Robot extends LoggedOpModeRobot {
   // Mechanisms
   public final ExampleTurret turret;
   public final Drive drive;
-  public final Shooter shooter;
 
   // Robot instance
   private static Robot instance;
@@ -39,8 +37,6 @@ public class Robot extends LoggedOpModeRobot {
 
     // Initialize simulated mechanisms
     turret = new ExampleTurret();
-    shooter = new Shooter();
-
 
     // dw about this one too much
     drive = Drive.initialize(new GyroIO() {}, new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim(), new ModuleIOSim());
@@ -54,7 +50,7 @@ public class Robot extends LoggedOpModeRobot {
     // Call mechanisms' perodic methods every loop
     turret.periodic();
     drive.periodic();
-    shooter.periodic();
+
     /* 1d. Call the Shooter periodic method
     Call your shooter's periodic() method so that sim and logging update.
      */
