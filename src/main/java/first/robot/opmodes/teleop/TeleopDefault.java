@@ -22,6 +22,8 @@ public class TeleopDefault implements OpMode {
     Trigger turretDown;
     Trigger turretUp;
 
+    Trigger shooterSpin;
+    Trigger shooterReverse;
     /* 1e. Trigger bindings
     Create a new Trigger for your shooter's setVoltage method.
     Then, bind it to a controller button.
@@ -37,6 +39,9 @@ public class TeleopDefault implements OpMode {
 
         turretDown = driverController.dpadLeft();
         turretUp = driverController.dpadRight();
+
+        shooterSpin = driverController.leftBumper();
+        shooterReverse = driverController.leftTrigger();
     }
 
     // Default commands and commands bound to triggers can go in here
@@ -54,6 +59,9 @@ public class TeleopDefault implements OpMode {
 
         turretDown.whileTrue(robot.turret.decrementGoal());
         turretUp.whileTrue(robot.turret.incrementGoal());
+
+        shooterSpin.whileTrue(robot.shooter.setVoltage(6));
+        shooterReverse.whileTrue(robot.shooter.setVoltage(-6));
     }
 
     // Constructor, stuff that needs to run when the opmode is selected goes in here

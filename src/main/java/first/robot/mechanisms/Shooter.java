@@ -1,5 +1,6 @@
 package first.robot.mechanisms;
 
+import org.littletonrobotics.junction.Logger;
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.system.DCMotor;
@@ -21,16 +22,21 @@ public class Shooter implements Mechanism {
         /* 1a. Finish this command!
         Write a command to set the voltage of the simulated shooter.
          */
-        return null;
+        return run(coroutine -> {
+            shooterSim.setInputVoltage(volts);
+        }).named("Spin Shooter");
     }
 
     public void periodic() {
         shooterSim.update(0.02);
-
         /* 1b. Logging
         Update the shooter's velocity and voltage,
         then log them so that you can see it moving in Advantagescope
         Hint: Use Logger (the Littleton Robotics one).
          */
+        voltage = shooterSim.getInputVoltage();
+        velocity = shooterSim.getAngularVelocity();
+        Logger.recordOutput("Shooter/Velocity", velocity);
+        Logger.recordOutput("Shooter/Voltage", voltage);
     }
 }
